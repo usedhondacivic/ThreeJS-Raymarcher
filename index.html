@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Three.js Hello World</title>
+        <style>
+            body { margin: 0;}
+            canvas {display: block;}
+        </style>
+    </head>
+    <body>
+        <script type="module">
+            import * as THREE from "./node_modules/three/build/three.module.js"; 
+            import { WEBGL } from "./node_modules/three/examples/jsm/WebGL.js";
+            import { PointerLockControls } from "./node_modules/three/examples/jsm/controls/PointerLockControls.js";
+
+            function init() {
+                var clock = new THREE.Clock();
+                
+                var scene = new THREE.Scene();
+                var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+                var renderer = new THREE.WebGLRenderer();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
+
+                var planeGeometry = new THREE.PlaneBufferGeometry(2, 2);
+                var boxGeometry = new THREE.BoxGeometry();
+                var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+
+                let vertexShader = new  XMLHttpRequest();
+                vertexShader.open('GET', './shaders/vertex.glsl', false);
+                vertexShader.send(null);
+                if(vertexShader.status >= 200 && vertexShader.status < 300){
+                    vertexShader = vertexShader.responseText;
+                }
+
+                let fragmentShader = new  XMLHttpRequest();
+                fragmentShader.open('GET', './shaders/fragment.glsl', false);
+                fragmentShader.send(null);
+                if(fragmentShader.status >= 200 && fragmentShader.status < 300){
+                    fragmentShader = fragmentShader.responseText;
+                }
+
+                var shaderUniforms = {
+                    iTime: {value: 0},
+                    iResolution: {value: new THREE.Vector2(window.innerWidth, window.innerHeight)},
+                };
+
+                var shaderMaterial = new THREE.ShaderMaterial({
+                    uniforms: shaderUniforms,
+                    vertexShader: vertexShader,
+                    fragmentShader: fragmentShader
+                });
+
+                var plane = new THREE.Mesh(planeGeometry, shaderMaterial);
+                plane.x = -1;
+                plane.y = -1;
+                scene.add( plane );
+
+                var box = new THREE.Mesh(boxGeometry, material);
+                scene.add(box);
+
+                camera.position.set(15, 6, 30);
+                camera.up.set( 0, 1, 0 );
+                camera.lookAt(0.0, 0.0, 0.0);
+                camera.updateProjectionMatrix();
+                
+
+                console.log(camera.rotation);
+                console.log(camera.position);
+                console.log(camera.matrixWorldInverse);
+
+                /*function customViewMatrix(eye, center, up) {
+                    // Based on gluLookAt man page
+                    var f = center.sub(eye);
+                    f.normalize();
+                    var s = new THREE.Vector3().crossVectors(f, up);
+                    s.normalize();
+                    var u = new THREE.Vector3().crossVectors(s, f);
+                    return new THREE.Matrix4(
+                        new THREE.Vector4(s, 0.0),
+                        new THREE.Vector4(u, 0.0),
+                        new THREE.Vector4(-f, 0.0),
+                        new THREE.Vector4(0.0, 0.0, 0.0, 1)
+                    );
+                }
+
+                console.log(customViewMatrix(new THREE.Vector3(8, 5, 7), new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)));*/
+
+                function render(time)  {
+                    requestAnimationFrame( render );
+
+                    renderer.render(scene, camera);
+                }
+
+                if(WEBGL.isWebGLAvailable){
+                    requestAnimationFrame( render );
+                }else{
+                    var warning = WEBGL.getWebGLErrorMessage();
+                    document.getElementById('container'.appendChild(warning));
+                }
+
+
+
+                window.addEventListener('resize', function () {
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                });
+            }
+
+            window.onload = init;
+        </script>
+    </body>
+</html>
