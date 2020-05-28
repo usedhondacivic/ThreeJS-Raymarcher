@@ -27,7 +27,7 @@
                 var planeGeometry = new THREE.PlaneBufferGeometry(2, 2);
                 var boxGeometry = new THREE.BoxGeometry();
                 var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-
+                
                 let vertexShader = new  XMLHttpRequest();
                 vertexShader.open('GET', './shaders/vertex.glsl', false);
                 vertexShader.send(null);
@@ -56,16 +56,15 @@
                 var plane = new THREE.Mesh(planeGeometry, shaderMaterial);
                 plane.x = -1;
                 plane.y = -1;
-                scene.add( plane );
+                scene.add( plane ); 
 
                 var box = new THREE.Mesh(boxGeometry, material);
                 scene.add(box);
 
-                camera.position.set(15, 6, 30);
+                camera.position.set(5, 8, 8);
                 camera.up.set( 0, 1, 0 );
                 camera.lookAt(0.0, 0.0, 0.0);
                 camera.updateProjectionMatrix();
-                
 
                 console.log(camera.rotation);
                 console.log(camera.position);
@@ -90,6 +89,8 @@
 
                 function render(time)  {
                     requestAnimationFrame( render );
+
+                    shaderUniforms.iTime.value = time * 0.001;
 
                     renderer.render(scene, camera);
                 }
