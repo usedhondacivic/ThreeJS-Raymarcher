@@ -100,9 +100,9 @@ float sceneSDF(vec3 samplePoint) {
     //return max(-boxSDF(samplePoint, vec3(1, 1, 1)), sphereSDF(samplePoint, 0.55));
     //return boxSDF(samplePoint, vec3(1, 1, 1));
     //(mod(samplePoint.x, 2.0) - 1.0
-    vec4 pointF = vec4(samplePoint.x, samplePoint.y, samplePoint.z, 0);
+    vec4 pointF = vec4(mod(samplePoint.x, 2.0) - 1.0, samplePoint.y, samplePoint.z, 0);
     vec4 transformedPoint = pointF * rotationX(-iTime* 0.5) * rotationY(-iTime * 0.9);
-    return mandleBulbSDF(transformedPoint.xyz).y;
+    return mod(mandleBulbSDF(transformedPoint.xyz).y, 50.0);
     //return mod(samplePoint.x, 10.0);
 }
 
