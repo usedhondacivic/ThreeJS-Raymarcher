@@ -40,7 +40,7 @@ mat4 rotationZ( in float angle ) {
 
 const int MAX_MARCHING_STEPS = 255;
 const float MIN_DIST = 0.0;
-const float MAX_DIST = 1000.0;
+const float MAX_DIST = 255.0;
 const float EPSILON = 0.001;
 
 struct rayInfo
@@ -100,9 +100,11 @@ float sceneSDF(vec3 samplePoint) {
     //return max(-boxSDF(samplePoint, vec3(1, 1, 1)), sphereSDF(samplePoint, 0.55));
     //return boxSDF(samplePoint, vec3(1, 1, 1));
     //(mod(samplePoint.x, 2.0) - 1.0
-    vec4 pointF = vec4(mod(samplePoint.x, 2.0) - 1.0, samplePoint.y, samplePoint.z, 0);
+    samplePoint.x += 2.0;
+    vec4 pointF = vec4(mod(samplePoint.x, 4.0) - 2.0, samplePoint.y, samplePoint.z, 0);
     vec4 transformedPoint = pointF * rotationX(-iTime* 0.5) * rotationY(-iTime * 0.9);
-    return mod(mandleBulbSDF(transformedPoint.xyz).y, 50.0);
+    return mandleBulbSDF(transformedPoint.xyz).y;
+    //return mod(mandleBulbSDF(transformedPoint.xyz).y, 50.0);
     //return mod(samplePoint.x, 10.0);
 }
 
@@ -177,11 +179,18 @@ void main()
     }
     
     //gl_FragColor = vec4(10.0/(count*count), 10.0/(count*count), 10.0/(count*count), 1.0);
-    float ambientOcclusion = pow(count, 2.0) / 500.0;
-    ambientOcclusion = pow(ambientOcclusion, -1.0);
-
-    //float ambientOcclusion = pow(count, 2.0) / 2000.0;
-    //float ambientOcclusion = 0.0;
-    gl_FragColor = vec4((gl_FragCoord.x / iResolution.x) - ambientOcclusion, (gl_FragCoord.y / iResolution.y) - ambientOcclusion, (cos(iTime * 1.5) * 0.4) + 0.6 - ambientOcclusion, 1.0);
+    float ambientOcclusion;
+    if(gl_FragCoord.x <= iResolution.x / 3.0){
+        ambientOcclusion = pow(count, 2.0) / 3000.0;
+        gl_FragColor = vec4(ambientOcclusion, ambientOcclusion, ambientOcclusion, 1.0);
+    }else if(gl_FragCoord.x <= iResolution.x * 2.0 / 3.0){
+        ambientOcclusion = pow(count, 2.0) / 500.0;
+        ambientOcclusion = pow(ambientOcclusion, -1.0);
+        gl_FragColor = vec4((gl_FragCoord.x / iResolution.x) - ambientOcclusion, (gl_FragCoord.y / iResolution.y) - ambientOcclusion, (cos(iTime * 1.5) * 0.4) + 0.6 - ambientOcclusion, 1.0);
+    }else{
+        ambientOcclusion = pow(count, 2.0) / 2000.0;
+        gl_FragColor = vec4((gl_FragCoord.x / iResolution.x) - ambientOcclusion, (gl_FragCoord.y / iResolution.y) - ambientOcclusion, (cos(iTime * 1.5) * 0.4) + 0.6 - ambientOcclusion, 1.0);
+    }
+    
     //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
