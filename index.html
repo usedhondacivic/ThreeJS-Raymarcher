@@ -9,12 +9,14 @@
         </style>
     </head>
     <body>
+        <script src="./node_modules/ccapture.js/build/CCapture.all.min.js"></script>
         <script type="module">
             import * as THREE from "./node_modules/three/build/three.module.js"; 
             import { WEBGL } from "./node_modules/three/examples/jsm/WebGL.js";
             import { PointerLockControls } from "./node_modules/three/examples/jsm/controls/PointerLockControls.js";
 
             function init() {
+                var capturer = new CCapture( { format: 'webm', workersPath: './node_modules/ccapture.js/src/'} );
                 var clock = new THREE.Clock();
                 
                 var scene = new THREE.Scene();
@@ -87,22 +89,35 @@
 
                 console.log(customViewMatrix(new THREE.Vector3(8, 5, 7), new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)));*/
 
+                var captureRunning = true;
+
                 function render(time)  {
                     requestAnimationFrame( render );
 
-                    shaderUniforms.iTime.value = time * 0.001;
+                    var timeSeconds = time * 0.001;
+
+                    shaderUniforms.iTime.value = timeSeconds;
 
                     renderer.render(scene, camera);
+
+                    capturer.capture( renderer.domElement );
+
+                    if(timeSeconds >= 3 && captureRunning){
+                        captureRunning = false;
+
+                        capturer.save();
+                        
+                        capturer.stop();
+                    }
                 }
 
                 if(WEBGL.isWebGLAvailable){
                     requestAnimationFrame( render );
+                    //capturer.start();
                 }else{
                     var warning = WEBGL.getWebGLErrorMessage();
                     document.getElementById('container'.appendChild(warning));
                 }
-
-
 
                 window.addEventListener('resize', function () {
                     renderer.setSize(window.innerWidth, window.innerHeight);
