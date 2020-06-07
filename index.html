@@ -13,7 +13,7 @@
         <script type="module">
             import * as THREE from "./node_modules/three/build/three.module.js"; 
             import { WEBGL } from "./node_modules/three/examples/jsm/WebGL.js";
-            import { PointerLockControls } from "./node_modules/three/examples/jsm/controls/PointerLockControls.js";
+            import { OrbitControls } from "./node_modules/three/examples/jsm/controls/OrbitControls.js";
 
             function init() {
                 var capturer = new CCapture( { format: 'webm', workersPath: './node_modules/ccapture.js/src/'} );
@@ -22,9 +22,11 @@
                 var scene = new THREE.Scene();
                 var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-                var renderer = new THREE.WebGLRenderer();
+                var renderer = new THREE.WebGLRenderer({ antialias: true });
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 document.body.appendChild(renderer.domElement);
+                
+                var controls = new OrbitControls(camera, renderer.domElement);
 
                 var planeGeometry = new THREE.PlaneBufferGeometry(2, 2);
                 var boxGeometry = new THREE.BoxGeometry();
@@ -63,38 +65,23 @@
                 var box = new THREE.Mesh(boxGeometry, material);
                 scene.add(box);
 
-                camera.position.set(0, 0, 15);
+                camera.position.set(-2, 27, 25);
                 camera.up.set( 0, 1, 0 );
                 camera.lookAt(0.0, 0.0, 0.0);
                 camera.updateProjectionMatrix();
-
-                console.log(camera.rotation);
-                console.log(camera.position);
-                console.log(camera.matrixWorldInverse);
-
-                /*function customViewMatrix(eye, center, up) {
-                    // Based on gluLookAt man page
-                    var f = center.sub(eye);
-                    f.normalize();
-                    var s = new THREE.Vector3().crossVectors(f, up);
-                    s.normalize();
-                    var u = new THREE.Vector3().crossVectors(s, f);
-                    return new THREE.Matrix4(
-                        new THREE.Vector4(s, 0.0),
-                        new THREE.Vector4(u, 0.0),
-                        new THREE.Vector4(-f, 0.0),
-                        new THREE.Vector4(0.0, 0.0, 0.0, 1)
-                    );
-                }
-
-                console.log(customViewMatrix(new THREE.Vector3(8, 5, 7), new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)));*/
+                controls.update();
 
                 var captureRunning = true;
-
+                var startTime = -1;
+                
                 function render(time)  {
+                    if(startTime < 0){
+                        startTime = time * 0.001;
+                    }
+
                     requestAnimationFrame( render );
 
-                    var timeSeconds = time * 0.001;
+                    var timeSeconds = time * 0.001 - startTime;
 
                     shaderUniforms.iTime.value = timeSeconds;
 
@@ -102,7 +89,9 @@
 
                     capturer.capture( renderer.domElement );
 
-                    if(timeSeconds >= 3 && captureRunning){
+                    controls.update();
+
+                    if(timeSeconds >= (2 / 0.9) * Math.PI * 2 && captureRunning){
                         captureRunning = false;
 
                         capturer.save();
