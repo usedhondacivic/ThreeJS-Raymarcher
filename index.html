@@ -22,7 +22,7 @@
                 var scene = new THREE.Scene();
                 var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-                var renderer = new THREE.WebGLRenderer({ antialias: true });
+                var renderer = new THREE.WebGLRenderer();
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 document.body.appendChild(renderer.domElement);
                 
@@ -73,6 +73,9 @@
 
                 var captureRunning = true;
                 var startTime = -1;
+                var rotation = 0;
+                var rotationRadius = 35;
+                var period = 10;
                 
                 function render(time)  {
                     if(startTime < 0){
@@ -89,6 +92,11 @@
 
                     capturer.capture( renderer.domElement );
 
+                    camera.position.set(Math.cos(timeSeconds*Math.PI*2 / period) * rotationRadius, 20, Math.sin(timeSeconds*Math.PI*2 / period) * rotationRadius);
+                    camera.up.set( 0, 1, 0 );
+                    camera.lookAt(0.0, 0.0, 0.0);
+                    camera.updateProjectionMatrix();
+
                     controls.update();
 
                     if(timeSeconds >= 10 && captureRunning){
@@ -102,7 +110,7 @@
 
                 if(WEBGL.isWebGLAvailable){
                     requestAnimationFrame( render );
-                    //capturer.start();
+                    capturer.start();
                 }else{
                     var warning = WEBGL.getWebGLErrorMessage();
                     document.getElementById('container'.appendChild(warning));
