@@ -198,7 +198,7 @@ float sceneSDF(vec3 samplePoint) {
     float A = 2.0;
     float P = 5.0;
     float sDev = 0.05;
-    float triangleWave = 2.0 * acos((1.0 - sDev)*sin((2.0*PI*iTime) / 30.0)) / PI;
+    float triangleWave = 0.66 * acos((1.0 - sDev)*sin((2.0*PI*iTime) / 10.0)) / PI;
     return min(sphereSDF(samplePoint, 3.0), torusSDF((samplePoint.xyzz * rotationZ(0.5)).xyz, vec2(7.0, 0.1))) + snoise(vec4(samplePoint, triangleWave)) * 0.6;
     //return max(-boxSDF(samplePoint, vec3(1, 1, 1)), sphereSDF(samplePoint, 0.55)) + snoise(vec4(samplePoint, iTime / 6.0)) * 0.6;
     //return boxSDF(samplePoint, vec3(3, 3, 3)) + snoise(vec4(samplePoint, iTime / 6.0)) * 0.6;
@@ -302,7 +302,7 @@ void main()
     ambientOcclusion = pow(ambientOcclusion, -1.0);
     ambientOcclusion = 1.0 - ambientOcclusion;
     //ambientOcclusion -= dist / 30.0;
-    gl_FragColor = vec4((gl_FragCoord.x / iResolution.x) - ambientOcclusion, (gl_FragCoord.y / iResolution.y) - ambientOcclusion, (cos(iTime * 0.8) * 0.4) + 0.6 - ambientOcclusion, 1.0);
+    gl_FragColor = vec4((gl_FragCoord.x / iResolution.x) - ambientOcclusion, (gl_FragCoord.y / iResolution.y) - ambientOcclusion, (cos(2.0*PI*iTime / 5.0) * 0.4) + 0.6 - ambientOcclusion, 1.0);
     
     //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
