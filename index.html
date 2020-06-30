@@ -5,7 +5,10 @@
         <title>Three.js Hello World</title>
         <style>
             body { margin: 0;}
-            canvas {display: block;}
+            canvas {
+                display: block;
+                image-rendering: pixelated;    
+            }
         </style>
     </head>
     <body>
@@ -23,6 +26,7 @@
                 var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
                 var renderer = new THREE.WebGLRenderer();
+                renderer.setPixelRatio( window.devicePixelRatio * 1 );
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 document.body.appendChild(renderer.domElement);
                 
@@ -46,9 +50,13 @@
                     fragmentShader = fragmentShader.responseText;
                 }
 
+                var resolution = new THREE.Vector2();
+                renderer.getSize(resolution);
+                resolution.multiplyScalar(renderer.getPixelRatio());
+
                 var shaderUniforms = {
                     iTime: {value: 0},
-                    iResolution: {value: new THREE.Vector2(window.innerWidth, window.innerHeight)},
+                    iResolution: {value: resolution},
                 };
 
                 var shaderMaterial = new THREE.ShaderMaterial({
@@ -92,7 +100,7 @@
 
                     capturer.capture( renderer.domElement );
 
-                    camera.position.set(Math.cos(timeSeconds*Math.PI*2 / period) * rotationRadius, 20, Math.sin(timeSeconds*Math.PI*2 / period) * rotationRadius);
+                    //camera.position.set(Math.cos(timeSeconds*Math.PI*2 / period) * rotationRadius, 20, Math.sin(timeSeconds*Math.PI*2 / period) * rotationRadius);
                     camera.up.set( 0, 1, 0 );
                     camera.lookAt(0.0, 0.0, 0.0);
                     camera.updateProjectionMatrix();
@@ -110,7 +118,7 @@
 
                 if(WEBGL.isWebGLAvailable){
                     requestAnimationFrame( render );
-                    capturer.start();
+                    //capturer.start();
                 }else{
                     var warning = WEBGL.getWebGLErrorMessage();
                     document.getElementById('container'.appendChild(warning));
