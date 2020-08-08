@@ -3,7 +3,7 @@
 uniform float iTime;
 uniform vec2 iResolution;
 
-highp mat4 transpose(in highp mat4 inMatrix) {
+/*highp mat4 transpose(in highp mat4 inMatrix) {
     highp vec4 i0 = inMatrix[0];
     highp vec4 i1 = inMatrix[1];
     highp vec4 i2 = inMatrix[2];
@@ -17,7 +17,7 @@ highp mat4 transpose(in highp mat4 inMatrix) {
                  );
 
     return outMatrix;
-}
+}*/
 
 mat4 rotationX( in float angle ) {
 	return mat4(	1.0,		0,			0,			0,
