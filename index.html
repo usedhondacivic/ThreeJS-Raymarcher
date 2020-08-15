@@ -37,14 +37,14 @@
                 var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
                 
                 let vertexShader = new  XMLHttpRequest();
-                vertexShader.open('GET', './shaders/vertex.glsl', false);
+                vertexShader.open('GET', './shaders/fullscreen_vert.glsl', false);
                 vertexShader.send(null);
                 if(vertexShader.status >= 200 && vertexShader.status < 300){
                     vertexShader = vertexShader.responseText;
                 }
 
                 let fragmentShader = new  XMLHttpRequest();
-                fragmentShader.open('GET', './shaders/fragment.glsl', false);
+                fragmentShader.open('GET', './shaders/mandelbulb_frag.glsl', false);
                 fragmentShader.send(null);
                 if(fragmentShader.status >= 200 && fragmentShader.status < 300){
                     fragmentShader = fragmentShader.responseText;
