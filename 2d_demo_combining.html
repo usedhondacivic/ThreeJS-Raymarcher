@@ -8,11 +8,22 @@
         body {
             height: 100%;
             margin: 0;
+            padding: 0;
             overflow: hidden;
         }
 
         canvas {
-            min-height: 100%;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            position: absolute;
+            top: 0px;
+            z-index: -1;
+        }
+
+        #button_container {
+            margin: 10px;
         }
     </style>
 </head>
@@ -24,6 +35,8 @@
 
         const c_PI = 3.14;
 
+        var mode = "SUBTRACT";
+
         class c_point {
             constructor(x, y, radius) {
                 this.x = x;
@@ -33,9 +46,9 @@
         }
 
         let circle = {
-            x: 500,
-            y: 500,
-            radius: 100,
+            x: 600,
+            y: 400,
+            radius: 150,
             points: [],
             sdf: function (x, y) {
                 let dx = x - this.x;
@@ -44,14 +57,38 @@
             },
 
             draw: function () {
-                fill(255, 255, 255, 50);
+                if (mode == "SUBTRACT")
+                    fill(255, 0, 0, 25);
+                else
+                    fill(255, 255, 255, 25);
+                noStroke();
+                ellipse(this.x, this.y, this.radius * 2);
+            }
+        }
+
+        let circle_2 = {
+            x: 800,
+            y: 200,
+            radius: 300,
+            points: [],
+            sdf: function (x, y) {
+                let dx = x - this.x;
+                let dy = y - this.y;
+                return dist(x, y, this.x, this.y) - this.radius;
+            },
+
+            draw: function () {
+                if (mode == "SUBTRACT")
+                    fill(255, 0, 0, 25);
+                else
+                    fill(255, 255, 255, 25);
                 noStroke();
                 ellipse(this.x, this.y, this.radius * 2);
             }
         }
 
         let rectangle = {
-            x: 800,
+            x: 600,
             y: 300,
             width: 500,
             height: 300,
@@ -65,7 +102,7 @@
             },
 
             draw: function () {
-                fill(255, 255, 255, 50);
+                fill(255, 255, 255, 25);
                 noStroke();
                 rect(this.x, this.y, this.width, this.height);
             }
@@ -73,9 +110,10 @@
 
         let caster = {
             x: 100,
-            y: 100,
+            y: 250,
             theta: c_PI / 4,
             points: [],
+            detect_points: [],
 
             draw: function () {
                 noFill();
@@ -88,6 +126,12 @@
                     strokeWeight(10);
                     stroke(0, 255, 255);
                     point(this.points[i + 1].x, this.points[i + 1].y);
+                }
+
+                for (var i = 0; i < this.detect_points.length; i++) {
+                    strokeWeight(2);
+                    stroke(255, 255, 255);
+                    point(this.detect_points[i].x, this.detect_points[i].y);
                 }
 
                 fill(23, 23, 23);
@@ -109,11 +153,11 @@
             },
 
             update: function () {
-                this.theta = cos(millis() / 2000) * 0.7 + c_PI / 4;
+                this.theta = cos(millis() / 3000) * 0.7 + c_PI / 10;
                 this.points = [];
 
                 this.points.push(new c_point(this.x, this.y, this.SDF(this.x, this.y)));
-                while (this.points.length < 20) {
+                while (this.points.length < 100) {
                     let last_point = this.points[this.points.length - 1];
                     let new_x = last_point.x + cos(this.theta) * last_point.radius;
                     let new_y = last_point.y + sin(this.theta) * last_point.radius
@@ -121,6 +165,8 @@
                     let new_point = new c_point(new_x, new_y, new_radius);
                     this.points.push(new_point);
                     if (new_radius < 0.2 || new_radius > 3000) {
+                        if (new_radius < 0.2) this.detect_points.push(new_point);
+                        if (this.detect_points.length > 500) this.detect_points.shift();
                         break;
                     }
                 }
@@ -128,9 +174,15 @@
             },
 
             SDF: function (x, y) {
-                return min(circle.sdf(x, y), rectangle.sdf(x, y));
-                //return rectangle.sdf(x, y);
-                //return circle.sdf(x, y);
+                if (mode == "SUBTRACT") {
+                    return max(rectangle.sdf(x, y), -circle.sdf(x, y), -circle_2.sdf(x, y));
+                }
+                else if (mode == "INTERSECT") {
+                    return max(rectangle.sdf(x, y), circle.sdf(x, y), circle_2.sdf(x, y));
+                }
+                else if (mode == "UNION") {
+                    return min(rectangle.sdf(x, y), circle.sdf(x, y), circle_2.sdf(x, y));
+                }
             }
         }
 
@@ -145,6 +197,7 @@
             scale(w / 1500);
 
             circle.draw();
+            circle_2.draw();
 
             rectangle.draw();
 
@@ -154,8 +207,9 @@
 
         }
 
-        function step() {
-
+        function setMode(set) {
+            mode = set;
+            caster.detect_points = [];
         }
 
 
@@ -167,6 +221,11 @@
         }
     </script>
 
+    <div id="button_container">
+        <button onclick="setMode('SUBTRACT')">SUBTRACT</button>
+        <button onclick="setMode('UNION')">UNION</button>
+        <button onclick="setMode('INTERSECT')">INTERSECT</button>
+    </div>
 </body>
 
 </html>
