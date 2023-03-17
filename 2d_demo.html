@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            min-height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+
+        const PI = 3.14;
+
+        class point {
+            constructor(x, y, radius) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+            }
+        }
+
+        let circle = {
+            x: 500,
+            y: 500,
+            radius: 100,
+            points: [],
+            sdf: function (x, y) {
+                let dx = x - this.x;
+                let dy = y - this.y;
+                return sqrt(dx * dx + dy * dy) - this.radius;
+            },
+
+            draw: function () {
+                fill(23, 23, 23);
+                strokeWeight(2);
+                stroke(255, 255, 255);
+                ellipse(this.x, this.y, this.radius * 2);
+            }
+        }
+
+        let rectangle = {
+            x: 800,
+            y: 300,
+            width: 500,
+            height: 300,
+            sdf: function (x, y) {
+                d_x = abs(x) - this.x;
+                d_y = abs(y) - this.y;
+
+                return dist(max(d_x, 0.0) + min(max(d_x, d_y)), max(d_y, 0) + min(max(d_x, d_y)), 0.0, 0.0);
+            },
+
+            draw: function () {
+                fill(23, 23, 23);
+                strokeWeight(2);
+                stroke(255, 255, 255);
+                rect(this.x, this.y, this.width, this.height);
+            }
+        }
+
+        let caster = {
+            x: 100,
+            y: 100,
+            theta: PI / 4,
+            points: [],
+
+            draw: function () {
+                strokeWeight(2);
+                noFill();
+
+                for (var i = 0; i < this.points.length - 1; i++) {
+                    line(this.points[i].x, this.points[i].y, this.points[i + 1].x, this.points[i + 1].y);
+                    ellipse(this.points[i].x, this.points[i].y, this.points[i].radius * 2);
+                }
+
+                fill(23, 23, 23);
+                strokeWeight(5);
+                stroke(255, 255, 255);
+
+                push();
+
+                translate(this.x, this.y);
+                rotate(this.theta);
+
+                rectMode(CENTER);
+
+                rect(0, 0, 40, 30);
+
+                triangle(25, 0, 40, 15, 40, -15);
+
+                pop();
+            },
+
+            update: function () {
+                this.theta = cos(millis() / 2000) * 0.6 + PI / 4;
+                this.points = [];
+
+                this.points.push(new point(this.x, this.y, this.SDF(this.x, this.y)));
+                while (this.points.length < 20) {
+                    let last_point = this.points[this.points.length - 1];
+                    let new_x = last_point.x + cos(this.theta) * last_point.radius;
+                    let new_y = last_point.y + sin(this.theta) * last_point.radius
+                    let new_radius = this.SDF(new_x, new_y);
+                    if (new_radius < 0.2 || new_radius > 1000) {
+                        break;
+                    }
+                    let new_point = new point(new_x, new_y, new_radius);
+
+                    this.points.push(new_point);
+                }
+            },
+
+            SDF: function (x, y) {
+                return min(circle.sdf(x, y), rectangle.sdf(x, y));
+            }
+        }
+
+        function setup() {
+            canvas = createCanvas(w, h);
+        }
+
+        function draw() {
+            background(23, 23, 23);
+
+            circle.draw();
+
+            rectangle.draw();
+
+            caster.update();
+            caster.draw();
+
+
+        }
+
+        function step() {
+
+        }
+
+
+        window.onresize = function () {
+            // assigns new values for width and height variables
+            w = window.innerWidth;
+            h = window.innerHeight;
+            canvas.size(w, h);
+        }
+    </script>
+
+</body>
+
+</html>
