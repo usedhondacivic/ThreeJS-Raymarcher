@@ -22,9 +22,9 @@
         var w = window.innerWidth;
         var h = window.innerHeight;
 
-        const PI = 3.14;
+        const c_PI = 3.14;
 
-        class point {
+        class c_point {
             constructor(x, y, radius) {
                 this.x = x;
                 this.y = y;
@@ -40,13 +40,12 @@
             sdf: function (x, y) {
                 let dx = x - this.x;
                 let dy = y - this.y;
-                return sqrt(dx * dx + dy * dy) - this.radius;
+                return dist(x, y, this.x, this.y) - this.radius;
             },
 
             draw: function () {
-                fill(23, 23, 23);
-                strokeWeight(2);
-                stroke(255, 255, 255);
+                fill(255, 255, 255, 50);
+                noStroke();
                 ellipse(this.x, this.y, this.radius * 2);
             }
         }
@@ -57,16 +56,17 @@
             width: 500,
             height: 300,
             sdf: function (x, y) {
-                d_x = abs(x) - this.x;
-                d_y = abs(y) - this.y;
+                let d_x = abs(x - this.x - this.width / 2) - this.width / 2;
+                let d_y = abs(y - this.y - this.height / 2) - this.height / 2;
+                let outside_dist = dist(max(d_x, 0.0), max(d_y, 0.0), 0, 0);
+                let inside_dist = min(max(d_x, d_y), 0);
 
-                return dist(max(d_x, 0.0) + min(max(d_x, d_y)), max(d_y, 0) + min(max(d_x, d_y)), 0.0, 0.0);
+                return outside_dist + inside_dist;
             },
 
             draw: function () {
-                fill(23, 23, 23);
-                strokeWeight(2);
-                stroke(255, 255, 255);
+                fill(255, 255, 255, 50);
+                noStroke();
                 rect(this.x, this.y, this.width, this.height);
             }
         }
@@ -74,16 +74,20 @@
         let caster = {
             x: 100,
             y: 100,
-            theta: PI / 4,
+            theta: c_PI / 4,
             points: [],
 
             draw: function () {
-                strokeWeight(2);
                 noFill();
 
                 for (var i = 0; i < this.points.length - 1; i++) {
+                    strokeWeight(1);
+                    stroke(255, 255, 255);
                     line(this.points[i].x, this.points[i].y, this.points[i + 1].x, this.points[i + 1].y);
                     ellipse(this.points[i].x, this.points[i].y, this.points[i].radius * 2);
+                    strokeWeight(10);
+                    stroke(0, 255, 255);
+                    point(this.points[i + 1].x, this.points[i + 1].y);
                 }
 
                 fill(23, 23, 23);
@@ -105,26 +109,28 @@
             },
 
             update: function () {
-                this.theta = cos(millis() / 2000) * 0.6 + PI / 4;
+                this.theta = cos(millis() / 2000) * 0.7 + c_PI / 4;
                 this.points = [];
 
-                this.points.push(new point(this.x, this.y, this.SDF(this.x, this.y)));
+                this.points.push(new c_point(this.x, this.y, this.SDF(this.x, this.y)));
                 while (this.points.length < 20) {
                     let last_point = this.points[this.points.length - 1];
                     let new_x = last_point.x + cos(this.theta) * last_point.radius;
                     let new_y = last_point.y + sin(this.theta) * last_point.radius
                     let new_radius = this.SDF(new_x, new_y);
-                    if (new_radius < 0.2 || new_radius > 1000) {
+                    let new_point = new c_point(new_x, new_y, new_radius);
+                    this.points.push(new_point);
+                    if (new_radius < 0.2 || new_radius > 3000) {
                         break;
                     }
-                    let new_point = new point(new_x, new_y, new_radius);
-
-                    this.points.push(new_point);
                 }
+
             },
 
             SDF: function (x, y) {
                 return min(circle.sdf(x, y), rectangle.sdf(x, y));
+                //return rectangle.sdf(x, y);
+                //return circle.sdf(x, y);
             }
         }
 
@@ -135,13 +141,16 @@
         function draw() {
             background(23, 23, 23);
 
+            push();
+            scale(w / 1500);
+
             circle.draw();
 
             rectangle.draw();
 
             caster.update();
             caster.draw();
-
+            pop();
 
         }
 
@@ -154,7 +163,7 @@
             // assigns new values for width and height variables
             w = window.innerWidth;
             h = window.innerHeight;
-            canvas.size(w, h);
+            resizeCanvas(w, h);
         }
     </script>
 
