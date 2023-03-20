@@ -88,8 +88,8 @@ float sdRhombus( in vec2 p, in vec2 b )
 
 float opSmoothUnion( float d1, float d2, float k ) {
     float h = clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
-    return mix( d2, d1, h ) - k*h*(1.0-h); }
-
+    return mix( d2, d1, h ) - k*h*(1.0-h); 
+}
 
 float getDist ( vec2 p){
   //float circ = sdCircle(p - iResolution / 2.0 + 200.0 * vec2(cos(iTime), sin(iTime)) + vec2(350.0, 0), 50.0);
@@ -97,7 +97,7 @@ float getDist ( vec2 p){
   float aspect = iResolution.y / iResolution.x;
   float circ = sdCircle(p - vec2(0.3, 0.5 * aspect) + 0.15 * vec2(cos(iTime / 1.2), sin(iTime / 1.2)), 0.05);
   float square = sdBox(p - vec2(0.7, 0.5 * aspect) + 0.15 * vec2(cos(iTime / 1.2 + PI), sin(iTime / 1.2 + PI)), vec2(0.05, 0.05));
-  float mouse = sdRoundedX(p - iMouse / iResolution.x, 0.05, 0.01);
+  float mouse = sdRoundedX(p - iMouse.xy * vec2(1.0, aspect), 0.05, 0.01);
   return opSmoothUnion(opSmoothUnion(circ, square, iBlend), mouse, iBlend);
 }
 

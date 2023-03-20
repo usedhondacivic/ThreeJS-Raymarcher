@@ -160,8 +160,8 @@
                 camera.updateProjectionMatrix();
             });
             document.addEventListener('mousemove', function () {
-                shaderUniforms.iMouse.value.x = event.clientX;
-                shaderUniforms.iMouse.value.y = shaderUniforms.iResolution.value.y - event.clientY;
+                shaderUniforms.iMouse.value.x = event.clientX / window.innerWidth;
+                shaderUniforms.iMouse.value.y = (window.innerHeight - event.clientY) / window.innerHeight;
             }, false);
 
             var slider = document.getElementById("myRange");
