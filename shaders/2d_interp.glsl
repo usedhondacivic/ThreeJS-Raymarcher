@@ -3,6 +3,7 @@
 uniform float iTime;
 uniform vec2 iResolution;
 uniform float iBlend;
+uniform vec2 iMouse;
 
 float sdCircle( vec2 p, float r )
 {
@@ -13,6 +14,12 @@ float sdBox( in vec2 p, in vec2 b )
 {
     vec2 d = abs(p)-b;
     return length(max(d,0.0)) + min(max(d.x,d.y),0.0);
+}
+
+float sdRoundedX( in vec2 p, in float w, in float r )
+{
+    p = abs(p);
+    return length(p-min(p.x+p.y,w)*0.5) - r;
 }
 
 float sdBlobbyCross( in vec2 pos, float he )
@@ -85,31 +92,35 @@ float opSmoothUnion( float d1, float d2, float k ) {
 
 
 float getDist ( vec2 p){
-  float circ = sdCircle(p - iResolution / 2.0 + 200.0 * vec2(cos(iTime), sin(iTime)) + vec2(350.0, 0), 50.0);
-  float square = sdBox(p - iResolution / 2.0 + 200.0 * vec2(cos(iTime + PI), sin(iTime + PI))+  vec2(-350, 0), vec2(50.0, 50.0));
-  return opSmoothUnion(circ, square, iBlend);
+  //float circ = sdCircle(p - iResolution / 2.0 + 200.0 * vec2(cos(iTime), sin(iTime)) + vec2(350.0, 0), 50.0);
+  //float square = sdBox(p - iResolution / 2.0 + 200.0 * vec2(cos(iTime + PI), sin(iTime + PI))+  vec2(-350, 0), vec2(50.0, 50.0));
+  float aspect = iResolution.y / iResolution.x;
+  float circ = sdCircle(p - vec2(0.3, 0.5 * aspect) + 0.15 * vec2(cos(iTime / 1.2), sin(iTime / 1.2)), 0.05);
+  float square = sdBox(p - vec2(0.7, 0.5 * aspect) + 0.15 * vec2(cos(iTime / 1.2 + PI), sin(iTime / 1.2 + PI)), vec2(0.05, 0.05));
+  float mouse = sdRoundedX(p - iMouse / iResolution.x, 0.05, 0.01);
+  return opSmoothUnion(opSmoothUnion(circ, square, iBlend), mouse, iBlend);
 }
 
 void main()
 {
 	//vec3 viewDir = rayDirection(45.0, iResolution.xy, gl_FragCoord.xy);
   float background = 0.2;
-  float dist = getDist(gl_FragCoord.xy);
-  if(dist < 2.0 && dist > -2.0){
+  float dist = getDist(gl_FragCoord.xy / iResolution.x);
+  if(dist < 0.001 && dist > -0.001){
         gl_FragColor = vec4( 1.0, 1.0, 1.0 , 1.0);
         return;
   }
   float col = sign(dist);
   float change = 1.0;
-  if(mod(dist, 14.0) > 7.0){
+  if(mod(dist, 0.006) > 0.003){
     change = 0.8;
   }
   if(dist > 0.0){
-    float distAdj = exp(- dist / 200.0);
+    float distAdj = exp(- dist / 0.1);
     gl_FragColor = vec4( 1.0 - col, 1.0 -  0.2 * col , 1.0 - 0.2 * col , 1.0 / (change * distAdj)) * change * distAdj;
   }else if(dist < 0.0){
     col *= -1.0;
-    float distAdj = exp(dist / 100.0);
+    float distAdj = exp(dist / 0.1);
     gl_FragColor = vec4( 1.0 - 0.2 * col, 1.0 -  0.55 * col , 1.0 - col , 1.0 / (change * distAdj)) * change * distAdj;
   }
 }

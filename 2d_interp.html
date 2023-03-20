@@ -88,7 +88,8 @@
             var shaderUniforms = {
                 iTime: { value: 0 },
                 iResolution: { value: resolution },
-                iBlend: { value: 500 }
+                iBlend: { value: 100 / 2000 },
+                iMouse: { value: new THREE.Vector2() }
             };
 
             var shaderMaterial = new THREE.ShaderMaterial({
@@ -158,12 +159,16 @@
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
             });
+            document.addEventListener('mousemove', function () {
+                shaderUniforms.iMouse.value.x = event.clientX;
+                shaderUniforms.iMouse.value.y = shaderUniforms.iResolution.value.y - event.clientY;
+            }, false);
 
             var slider = document.getElementById("myRange");
             var sliderVal = document.getElementById("sliderVal");
             slider.oninput = function () {
-                shaderUniforms.iBlend.value = this.value;
-                sliderVal.innerHTML = this.value;
+                shaderUniforms.iBlend.value = this.value / 2000;
+                sliderVal.innerHTML = this.value / 2000;
             }
         }
 
@@ -171,8 +176,8 @@
     </script>
 </body>
 <div class="slidecontainer">
-    <p>Blend factor: <span id="sliderVal">500</span></p>
-    <input type="range" min="50" max="1500" value="500" class="slider" id="myRange">
+    <p>Blend factor: <span id="sliderVal">0.05</span></p>
+    <input type="range" min="1" max="700" value="100" class="slider" id="myRange">
 </div>
 
 </html>
