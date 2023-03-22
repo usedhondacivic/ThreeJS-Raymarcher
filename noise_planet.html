@@ -136,7 +136,7 @@
                 //capturer.start();
             } else {
                 var warning = WEBGL.getWebGLErrorMessage();
-                document.getElementById('container'.appendChild(warning));
+                document.getElementById('container').appendChild(warning);
             }
 
             window.addEventListener('resize', function () {
@@ -148,6 +148,7 @@
 
         window.onload = init;
     </script>
+    <span id="container"></span>
 </body>
 
 </html>
