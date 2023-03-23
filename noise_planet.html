@@ -33,8 +33,11 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
         import WEBGL from "three/addons/capabilities/WebGL.js";
+        console.log("Script is running");
 
         function init() {
+
+            console.log("Entered init");
             var clock = new THREE.Clock();
 
             var scene = new THREE.Scene();
@@ -101,6 +104,8 @@
             var period = 10;
 
             function render(time) {
+
+                console.log("Entered render");
                 if (startTime < 0) {
                     startTime = time * 0.001;
                 }
