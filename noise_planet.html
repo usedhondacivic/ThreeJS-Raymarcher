@@ -28,7 +28,7 @@
     }
     </script>
 
-    <script type="module">
+    <script language="Javascript" type="module">
         import * as THREE from "three";
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
@@ -151,7 +151,7 @@
             });
         }
 
-        window.onload = init;
+        window.addEventListener("load", init, false);
     </script>
     <span id="container"></span>
 </body>
