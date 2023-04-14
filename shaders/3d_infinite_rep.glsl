@@ -30,7 +30,7 @@ float ndot( in vec2 a, in vec2 b ) { return a.x*b.x - a.y*b.y; }
 
 const int MAX_MARCHING_STEPS = 255;
 const float MIN_DIST = 0.0;
-const float MAX_DIST = 1000.0;
+const float MAX_DIST = 700.0;
 const float EPSILON = 0.0001;
 
 struct rayInfo
@@ -146,7 +146,7 @@ void main()
 {
     power = (cos(iTime * 0.7) * 0.5) + 0.51;
 
-	vec3 viewDir = rayDirection(45.0, iResolution.xy, gl_FragCoord.xy);
+	vec3 viewDir = rayDirection(70.0, iResolution.xy, gl_FragCoord.xy);
     vec3 eye = cameraPosition;
 
     vec3 worldDir = (transpose(viewMatrix) * vec4(viewDir, 0)).xyz;
