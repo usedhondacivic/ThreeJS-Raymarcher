@@ -80,8 +80,8 @@ float sdRhombus( in vec2 p, in vec2 b )
 }
 
 float getDist ( vec2 p){
-  float circ = sdCircle(p - iResolution / 2.0 + vec2(0, 0), 150.0);
-  float blobCross = sdBlobbyCross((p - iResolution / 2.0 + vec2(0, 0)) / 300.0 , 0.3) * 300.0;
+  float circ = sdCircle(p - iResolution / 2.0 + vec2(0, 0), 85.0);
+  float blobCross = sdBlobbyCross((p - iResolution / 2.0 + vec2(0, 0)) / 150.0 , 0.3) * 150.0;
 
   if(iMode == 0){
     return min(circ, blobCross);
