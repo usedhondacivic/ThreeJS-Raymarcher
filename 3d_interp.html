@@ -5,31 +5,13 @@
     <meta charset="utf-8">
     <title>Three.js Hello World</title>
     <style>
-        html,
         body {
-            height: 100%;
             margin: 0;
-            padding: 0;
-            overflow: hidden;
         }
 
         canvas {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            position: absolute;
-            top: 0px;
-            z-index: -1;
-        }
-
-        .slidecontainer {
-            padding: 20px;
-        }
-
-        p {
-            color: white;
-
+            display: block;
+            image-rendering: pixelated;
         }
     </style>
 </head>
@@ -62,6 +44,8 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
+        var controls = new OrbitControls(camera, renderer.domElement);
+
         var planeGeometry = new THREE.PlaneGeometry(2, 2);
         var boxGeometry = new THREE.BoxGeometry();
         var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -74,7 +58,7 @@
         }
 
         let fragmentShader = new XMLHttpRequest();
-        fragmentShader.open('GET', './shaders/2d_interp.glsl', false);
+        fragmentShader.open('GET', './shaders/3d_interp.glsl', false);
         fragmentShader.send(null);
         if (fragmentShader.status >= 200 && fragmentShader.status < 300) {
             fragmentShader = fragmentShader.responseText;
@@ -87,8 +71,6 @@
         var shaderUniforms = {
             iTime: { value: 0 },
             iResolution: { value: resolution },
-            iBlend: { value: 100 / 2000 },
-            iMouse: { value: new THREE.Vector2() }
         };
 
         var shaderMaterial = new THREE.ShaderMaterial({
@@ -109,6 +91,7 @@
         camera.up.set(0, 1, 0);
         camera.lookAt(0.0, 0.0, 0.0);
         camera.updateProjectionMatrix();
+        controls.update();
 
         var captureRunning = true;
         var startTime = -1;
@@ -136,6 +119,8 @@
             camera.lookAt(0.0, 0.0, 0.0);
             camera.updateProjectionMatrix();
 
+            controls.update();
+
             // if(timeSeconds >= 10 && captureRunning){
             //     captureRunning = false;
 
@@ -158,23 +143,8 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
         });
-        document.addEventListener('mousemove', function () {
-            shaderUniforms.iMouse.value.x = event.clientX / window.innerWidth;
-            shaderUniforms.iMouse.value.y = (window.innerHeight - event.clientY) / window.innerHeight;
-        }, false);
-
-        var slider = document.getElementById("myRange");
-        var sliderVal = document.getElementById("sliderVal");
-        slider.oninput = function () {
-            shaderUniforms.iBlend.value = this.value / 2000;
-            sliderVal.innerHTML = this.value / 2000;
-        }
     </script>
     <span id="container"></span>
 </body>
-<div class="slidecontainer">
-    <p>Blend factor: <span id="sliderVal">0.05</span></p>
-    <input type="range" min="1" max="700" value="300" class="slider" id="myRange">
-</div>
 
 </html>
