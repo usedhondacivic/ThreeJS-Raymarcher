@@ -1,32 +1,6 @@
 #define PI 3.1415926538
 
-uniform float iTime;
 uniform vec2 iResolution;
-
-mat4 rotationX( in float angle ) {
-	return mat4(	1.0,		0,			0,			0,
-			 		0, 	cos(angle),	-sin(angle),		0,
-					0, 	sin(angle),	 cos(angle),		0,
-					0, 			0,			  0, 		1);
-}
-
-mat4 rotationY( in float angle ) {
-	return mat4(	cos(angle),		0,		sin(angle),	0,
-			 				0,		1.0,			 0,	0,
-					-sin(angle),	0,		cos(angle),	0,
-							0, 		0,				0,	1);
-}
-
-mat4 rotationZ( in float angle ) {
-	return mat4(	cos(angle),		-sin(angle),	0,	0,
-			 		sin(angle),		cos(angle),		0,	0,
-							0,				0,		1,	0,
-							0,				0,		0,	1);
-}
-
-float dot2( in vec2 v ) { return dot(v,v); }
-float dot2( in vec3 v ) { return dot(v,v); }
-float ndot( in vec2 a, in vec2 b ) { return a.x*b.x - a.y*b.y; }
 
 const int MAX_MARCHING_STEPS = 255;
 const float MIN_DIST = 0.0;
@@ -41,48 +15,15 @@ struct rayInfo
     float minRadius;
 };
 
-float opSmoothUnion( float d1, float d2, float k ) {
-    float h = clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
-    return mix( d2, d1, h ) - k*h*(1.0-h); 
-}
-
-float sdSphere( vec3 p, float s )
-{
-  return length(p)-s;
-}
-
-float sdBox( vec3 p, vec3 b )
-{
-  vec3 q = abs(p) - b;
-  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
-}
-
 float sdTorus( vec3 p, vec2 t )
 {
   vec2 q = vec2(length(p.xz)-t.x,p.y);
   return length(q)-t.y;
 }
 
-float sdBoxFrame( vec3 p, vec3 b, float e )
-{
-       p = abs(p  )-b;
-  vec3 q = abs(p+e)-e;
-  return min(min(
-      length(max(vec3(p.x,q.y,q.z),0.0))+min(max(p.x,max(q.y,q.z)),0.0),
-      length(max(vec3(q.x,p.y,q.z),0.0))+min(max(q.x,max(p.y,q.z)),0.0)),
-      length(max(vec3(q.x,q.y,p.z),0.0))+min(max(q.x,max(q.y,p.z)),0.0));
-}
-
-float power = 0.5;
 
 float sceneSDF(vec3 p) {
-    float c = 10.0;
-    vec3 q = mod(p+0.5*c,c)-0.5*c;
-    //vec3 q = p;
-    //q = opTwist(q);
-    float s = 5.0;
-    float f = 15.0;
-    float d = sdBoxFrame(q, vec3(s, s, s), 0.2) + (sin(f*p.x)*sin(f*p.y)*sin(f*p.z)) * 0.1;
+    float d = sdTorus(p, vec2(1.0, 0.3));
     return d;
 }
 
@@ -132,10 +73,19 @@ vec3 estimateNormal(vec3 p) {
     ));
 }
 
+float diffuseLight(vec3 p, vec3 lightPos){
+    // https://timcoster.com/2020/02/11/raymarching-shader-pt1-glsl/
+    vec3 l = normalize(lightPos-p); // Light Vector
+    vec3 n = estimateNormal(p); // Normal Vector
+   
+    float dif = dot(n,l); // Diffuse light
+    dif = clamp(dif,0.,1.); // Clamp so it doesnt go below 0
+ 
+    return dif;
+}
+
 void main()
 {
-    power = (cos(iTime * 0.7) * 0.5) + 0.51;
-
 	vec3 viewDir = rayDirection(70.0, iResolution.xy, gl_FragCoord.xy);
     vec3 eye = cameraPosition;
     vec3 worldDir = (transpose(viewMatrix) * vec4(viewDir, 0)).xyz;
@@ -147,13 +97,16 @@ void main()
 
     if (dist > MAX_DIST - EPSILON) {
         // Didn't hit anything
-        float glowTop = 0.05;
-        float glowFactor = pow(minRadius, 0.2);
-        gl_FragColor = vec4(glowTop / glowFactor, glowTop / glowFactor, glowTop / glowFactor, 1.0);
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 		return;
     }
+
+    vec3 collisionPoint = eye + dist * worldDir;
+    float redLight = diffuseLight(collisionPoint, vec3(2.0, 2.0, 2.0)) * 1.5;
+    float greenLight = diffuseLight(collisionPoint, vec3(-2.0, 2.0, 2.0)) * 1.5;
+    float blueLight = diffuseLight(collisionPoint, vec3(2.0, 2.0, -2.0)) * 1.5;
+    float whiteLight = diffuseLight(collisionPoint, vec3(-2.0, -2.0, -2.0)) * 1.5;
+    float ambientOcclusion = -pow(count, 2.0) / 3000.0;
     
-    float ambientOcclusion;
-    ambientOcclusion = pow(count, 2.0) / 2000.0;
-    gl_FragColor = vec4(1.0 - ambientOcclusion, 1.0 - ambientOcclusion, 1.0 - ambientOcclusion, 1.0);
+    gl_FragColor = vec4(redLight + whiteLight + ambientOcclusion + 0.1, greenLight + whiteLight + ambientOcclusion + 0.1,  blueLight  + whiteLight+ ambientOcclusion + 0.1, 1.0);
 }
