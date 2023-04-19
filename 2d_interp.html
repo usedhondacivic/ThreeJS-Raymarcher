@@ -127,7 +127,13 @@
 
             shaderUniforms.iTime.value = timeSeconds;
 
-            renderer.render(scene, camera);
+            if (document.getElementById('container').checkVisibility({
+                checkOpacity: true,      // Check CSS opacity property too
+                checkVisibilityCSS: true // Check CSS visibility property too
+            })) {
+                renderer.render(scene, camera);
+            }
+
 
             //capturer.capture( renderer.domElement );
 

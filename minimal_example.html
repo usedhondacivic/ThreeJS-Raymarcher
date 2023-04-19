@@ -92,7 +92,12 @@
         function render(time) {
             requestAnimationFrame(render);
 
-            renderer.render(scene, camera);
+            if (document.getElementById('container').checkVisibility({
+                checkOpacity: true,      // Check CSS opacity property too
+                checkVisibilityCSS: true // Check CSS visibility property too
+            })) {
+                renderer.render(scene, camera);
+            }
 
             camera.lookAt(0.0, 0.0, 0.0);
             camera.updateProjectionMatrix();
@@ -113,6 +118,8 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
         });
+
+
     </script>
     <span id="container"></span>
 </body>
